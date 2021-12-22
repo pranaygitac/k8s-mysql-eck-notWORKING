@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+ labels:
+   app: mysql
+   component: filebeat
+ name: filebeat-config
+data:
+  filebeat.yml: |
+    filebeat:
+      config:
+        modules:
+          path: /usr/share/filebeat/modules.d/*.yml
+          reload:
+            enabled: true
+      modules:
+      - module: mysql
+        error:
+          enabled: true
+          var.paths: ["/var/log/mysql/error.log*"]
+        slowlog:
+          enabled: true
+          var.paths: ["/var/log/mysql/mysql-slow.log*"]        
+    output:
+      elasticsearch:
+        host: '${NODE_NAME}'
+        hosts: ['${ELASTICSEARCH_HOST:elasticsearch}:${ELASTICSEARCH_PORT:9200}']
+        username: ${ELASTICSEARCH_USERNAME}
+        password: ${ELASTICSEARCH_PASSWORD}
+        ssl.certificate_authorities:
+          - /etc/certificate/ca.crt
